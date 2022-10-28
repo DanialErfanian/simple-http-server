@@ -11,31 +11,24 @@
 #include <fstream>
 #include <algorithm>
 #include "http/HttpResponse.h"
-#include "utils/string_utils.h"
 #include "http/HttpRequest.h"
+#include "urls.h"
 
 #define PORT 8080
 
-string parseRequest(const string &requestBody);
-
 using namespace std;
 
+HttpResponse handleRequest(HttpRequest request) {
+    string url = request.getUrl();
+    auto handlerItem = handlers.find(url);
 
-string readFile(const string &path) {
-    string result;
-    ifstream file(path);
-    if (file.fail()) {
-        return "Failed to open file";
+    Handler *handler;
+    if (handlerItem == handlers.end()) {
+        handler = handlers.find("/")->second;
+    } else {
+        handler = handlerItem->second;
     }
-    string line;
-    while (getline(file, line)) {
-        if (line.empty()) {
-            break;
-        } else {
-            result += line;
-        }
-    }
-    return result;
+    return handler->handle(request);
 }
 
 int main(int argc, char const *argv[]) {
@@ -45,12 +38,6 @@ int main(int argc, char const *argv[]) {
     int addrlen = sizeof(address);
     const int bufferSize = 1024;
     char buffer[bufferSize] = {0};
-
-    HttpResponse resp{};
-    resp.setStatusCode(200);
-    resp.addHeader(HttpHeader("Content-Type", "text/html; charset=utf-8"));
-    resp.setBody(readFile("static/home.html"));
-    string response = resp.getData();
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -94,14 +81,13 @@ int main(int argc, char const *argv[]) {
             result = read(new_socket, buffer, bufferSize);
             request += string(buffer);
         } while (result == bufferSize);
-        string url = HttpRequest(request).getUrl();
-        cout << url << endl;
-        send(new_socket, response.c_str(), response.length(), 0);
+        HttpRequest httpRequest = HttpRequest(request);
+        cout << httpRequest.getUrl() << endl;
+        HttpResponse response = handleRequest(httpRequest);
+        string responseData = response.getData();
+        send(new_socket, responseData.c_str(), responseData.length(), 0);
 
         // closing the connected socket
         close(new_socket);
     }
-    // closing the listening socket
-    shutdown(server_fd, SHUT_RDWR);
-    return 0;
 }
