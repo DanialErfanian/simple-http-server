@@ -11,8 +11,12 @@
 #include <fstream>
 #include <algorithm>
 #include "http/HttpResponse.h"
+#include "utils/string_utils.h"
+#include "http/HttpRequest.h"
 
 #define PORT 8080
+
+string parseRequest(const string &requestBody);
 
 using namespace std;
 
@@ -35,11 +39,12 @@ string readFile(const string &path) {
 }
 
 int main(int argc, char const *argv[]) {
-    int server_fd, new_socket, valread;
+    int server_fd, new_socket;
     struct sockaddr_in address{};
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
+    const int bufferSize = 1024;
+    char buffer[bufferSize] = {0};
 
     HttpResponse resp{};
     resp.setStatusCode(200);
@@ -75,20 +80,27 @@ int main(int argc, char const *argv[]) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    if ((new_socket
-                 = accept(server_fd, (struct sockaddr *) &address,
-                          (socklen_t *) &addrlen))
-        < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-    valread = read(new_socket, buffer, 1024);
-    printf("%s\n", buffer);
-    send(new_socket, response.c_str(), response.length(), 0);
-    printf("Hello message sent\n");
+    while (true) {
+        if ((new_socket
+                     = accept(server_fd, (struct sockaddr *) &address,
+                              (socklen_t *) &addrlen))
+            < 0) {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+        string request;
+        ssize_t result;
+        do {
+            result = read(new_socket, buffer, bufferSize);
+            request += string(buffer);
+        } while (result == bufferSize);
+        string url = HttpRequest(request).getUrl();
+        cout << url << endl;
+        send(new_socket, response.c_str(), response.length(), 0);
 
-    // closing the connected socket
-    close(new_socket);
+        // closing the connected socket
+        close(new_socket);
+    }
     // closing the listening socket
     shutdown(server_fd, SHUT_RDWR);
     return 0;

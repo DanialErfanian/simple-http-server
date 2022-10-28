@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<string> split(const string &s, const string &delimiter) {
+vector<string> splitString(const string &s, const string &delimiter) {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     string token;
     vector<string> res;
