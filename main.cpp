@@ -8,7 +8,6 @@
 
 #include <sys/socket.h>
 #include <unistd.h>
-#include <vector>
 #include <fstream>
 #include <algorithm>
 #include "http/HttpResponse.h"

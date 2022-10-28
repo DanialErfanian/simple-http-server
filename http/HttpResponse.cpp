@@ -4,6 +4,7 @@
 
 #include "HttpResponse.h"
 #include "string"
+#include "../utils/string_utils.h"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ string HttpResponse::getData() {
     }
     httpLines.emplace_back(""); // to separate headers from http body
     httpLines.push_back(this->body);
-    return HttpResponse::joinLines(httpLines);
+    return joinStrings(httpLines, "\r\n");
 }
 
 void HttpResponse::addHeader(const HttpHeader &header) {
@@ -26,17 +27,6 @@ void HttpResponse::addHeader(const HttpHeader &header) {
 
 void HttpResponse::setStatusCode(int statusCode) {
     this->status_code = statusCode;
-}
-
-string HttpResponse::joinLines(const vector<string> &lines) {
-    string delim = "\r\n";
-    string ret;
-    for (const auto &s: lines) {
-        if (!ret.empty())
-            ret += delim;
-        ret += s;
-    }
-    return ret;
 }
 
 void HttpResponse::setBody(const string &newBody) {
