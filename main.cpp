@@ -2,10 +2,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
 
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include <fstream>
+#include <algorithm>
 
 #define PORT 8080
 
@@ -21,6 +26,23 @@ string join(vector<string> &lst, const std::string &delim) {
     return ret;
 }
 
+string readFile(const string &path) {
+    string result;
+    ifstream file(path);
+    if (file.fail()) {
+        return "Failed to open file";
+    }
+    string line;
+    while (getline(file, line)) {
+        if (line.empty()) {
+            break;
+        } else {
+            result += line;
+        }
+    }
+    return result;
+}
+
 int main(int argc, char const *argv[]) {
     int server_fd, new_socket, valread;
     struct sockaddr_in address{};
@@ -31,18 +53,10 @@ int main(int argc, char const *argv[]) {
             "HTTP/1.1 200 OK",
             "Content-Type: text/html; charset=utf-8",
             "",
-            "<!DOCTYPE html>\n"
-            "<html>\n"
-            "<body>\n"
-            "\n"
-            "<p>This is a paragraph.</p>\n"
-            "<p>This is another paragraph.</p>\n"
-            "\n"
-            "</body>\n"
-            "</html>\n"
-            ""
+            readFile("static/home.html")
     };
-    string hello = join(httpLines, "\r\n");
+
+    string response = join(httpLines, "\r\n");
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
@@ -80,7 +94,7 @@ int main(int argc, char const *argv[]) {
     }
     valread = read(new_socket, buffer, 1024);
     printf("%s\n", buffer);
-    send(new_socket, hello.c_str(), hello.length(), 0);
+    send(new_socket, response.c_str(), response.length(), 0);
     printf("Hello message sent\n");
 
     // closing the connected socket
