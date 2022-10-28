@@ -11,20 +11,12 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
+#include "http/HttpResponse.h"
 
 #define PORT 8080
 
 using namespace std;
 
-string join(vector<string> &lst, const std::string &delim) {
-    std::string ret;
-    for (const auto &s: lst) {
-        if (!ret.empty())
-            ret += delim;
-        ret += s;
-    }
-    return ret;
-}
 
 string readFile(const string &path) {
     string result;
@@ -49,14 +41,13 @@ int main(int argc, char const *argv[]) {
     int opt = 1;
     int addrlen = sizeof(address);
     char buffer[1024] = {0};
-    vector<string> httpLines = {
-            "HTTP/1.1 200 OK",
-            "Content-Type: text/html; charset=utf-8",
-            "",
-            readFile("static/home.html")
-    };
 
-    string response = join(httpLines, "\r\n");
+    HttpResponse resp{};
+    resp.setStatusCode(200);
+    resp.addHeader(HttpHeader("Content-Type", "text/html; charset=utf-8"));
+    resp.setBody(readFile("static/home.html"));
+    string response = resp.getData();
+
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
