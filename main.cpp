@@ -85,6 +85,7 @@ int main(int argc, char const *argv[]) {
         cout << httpRequest.getUrl() << endl;
         HttpResponse response = handleRequest(httpRequest);
         string responseData = response.getData();
+        cout << responseData.length() << endl;
         send(new_socket, responseData.c_str(), responseData.length(), 0);
 
         // closing the connected socket

@@ -6,6 +6,12 @@
 
 using namespace std;
 
+bool stringEndsWith(string const &value, string const &ending) {
+    if (ending.size() > value.size()) return false;
+    return equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+
 vector<string> splitString(const string &s, const string &delimiter) {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     string token;
@@ -21,7 +27,7 @@ vector<string> splitString(const string &s, const string &delimiter) {
     return res;
 }
 
-string joinStrings(const vector<string>& lines, const string& delim) {
+string joinStrings(const vector<string> &lines, const string &delim) {
     string ret;
     for (const auto &s: lines) {
         if (!ret.empty())

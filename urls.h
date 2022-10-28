@@ -17,8 +17,9 @@
 using namespace std;
 
 extern const map<string, Handler *> handlers = {
-        {"/",      new StaticFileHandler("static/home.html")},
-        {"/page2", new StaticFileHandler("static/page2.html")},
+        {"/",         new StaticFileHandler("static/home.html")},
+        {"/page2",    new StaticFileHandler("static/page2.html")},
+        {"/duck.jpg", new StaticFileHandler("static/duck.jpg")},
 };
 
 #endif //SIMPLE_HTTP_SERVER_URLS_H

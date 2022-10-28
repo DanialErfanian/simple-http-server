@@ -30,5 +30,6 @@ void HttpResponse::setStatusCode(int statusCode) {
 }
 
 void HttpResponse::setBody(const string &newBody) {
+    this->headers.emplace_back("Content-Length", to_string(newBody.length()));
     this->body = newBody;
 }

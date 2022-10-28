@@ -4,22 +4,21 @@
 
 #include <fstream>
 #include "StaticFileHandler.h"
+#include "../utils/string_utils.h"
 
 
 string readFile(const string &path) {
     string result;
-    ifstream file(path);
+    ifstream file(path, std::ios::binary);
     if (file.fail()) {
         return "Failed to open file";
     }
-    string line;
-    while (getline(file, line)) {
-        if (line.empty()) {
-            break;
-        } else {
-            result += line;
-        }
-    }
+    file.seekg(0, std::ios::end);
+    result.reserve(file.tellg());
+    file.seekg(0, std::ios::beg);
+
+    result.assign((std::istreambuf_iterator<char>(file)),
+                  std::istreambuf_iterator<char>());
     return result;
 }
 
@@ -27,7 +26,11 @@ string readFile(const string &path) {
 HttpResponse StaticFileHandler::handle(const HttpRequest &request) {
     HttpResponse response;
     response.setStatusCode(200);
-    response.addHeader(HttpHeader("Content-Type", "text/html; charset=utf-8"));
+    if (stringEndsWith(this->path, ".html")) {
+        response.addHeader(HttpHeader("Content-Type", "text/html; charset=utf-8"));
+    } else {
+        response.addHeader(HttpHeader("Content-Type", "image/jpeg"));
+    }
     response.setBody(readFile(this->path));
 
     return response;

@@ -10,6 +10,7 @@
 
 using namespace std;
 
+bool stringEndsWith(string const &value, string const &ending);
 
 string joinStrings(const vector<string> &lines, const string &delim);
 
